@@ -1,0 +1,40 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.28)
+PROJECT(loki-secure-sdk)
+
+# OPTION (Standard)
+SET(CMAKE_CXX_STANDARD 20)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
+
+# OPTION (3rdparty)
+OPTION(BUILD_SHARED_LIBS ON)
+
+# FIND (OpenSSL)
+FIND_PACKAGE(Threads REQUIRED)
+FIND_PACKAGE(OpenSSL REQUIRED)
+
+# ADD 3rdparty
+ADD_SUBDIRECTORY(3rdparty/spdlog)
+ADD_SUBDIRECTORY(src)
+
+# INCLUDE
+INCLUDE_DIRECTORIES(
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+
+# DEFINE executable file
+ADD_EXECUTABLE(loki-secure-sdk-app
+        main.cpp
+)
+
+# INCLUDE
+TARGET_INCLUDE_DIRECTORIES(loki-secure-sdk-app PRIVATE
+        src
+)
+
+# LINK
+TARGET_LINK_LIBRARIES(loki-secure-sdk-app PRIVATE
+        loki-secure-sdk
+        spdlog::spdlog
+)
