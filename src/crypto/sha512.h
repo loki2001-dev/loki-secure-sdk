@@ -1,0 +1,18 @@
+
+#pragma once
+
+#include "hash.h"
+
+namespace loki::crypto {
+    class SHA512 : public Hash {
+    public:
+        static constexpr size_t DIGEST_SIZE = 64;
+
+        SHA512();
+        ~SHA512() override = default;
+
+        static ByteArray hash(const uint8_t* data, size_t len);
+        static ByteArray hash(const ByteArray& data);
+        static ByteArray hash(const std::string& data);
+    };
+}
