@@ -40,7 +40,7 @@
 - Requires CMake 3.14 or later
 - Requires C++20 or later compiler
 - OpenSSL 3.0 or later (libssl-dev)
-  [spdlog](https://github.com/gabime/spdlog) (included as a submodule)
+- [spdlog](https://github.com/gabime/spdlog) (included as a submodule)
 
 ---
 
