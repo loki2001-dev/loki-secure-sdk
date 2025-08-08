@@ -1,8 +1,9 @@
 #include "openssl_wrapper.h"
+#include "crypto/aes.h"
+#include "crypto/chacha20.h"
+#include "crypto/md5.h"
 #include "crypto/sha256.h"
 #include "crypto/sha512.h"
-#include "crypto/aes.h"
-#include "crypto/md5.h"
 #include "crypto/random.h"
 #include <spdlog/spdlog.h>
 
@@ -74,6 +75,57 @@ int main() {
             hex_digest3 += buf;
         }
         spdlog::info("SHA-512(uint8_t*, size): '{}' = {}\n", message, hex_digest3);
+    }
+
+    // ChaCha20
+    {
+        spdlog::info("===== ChaCha20 Encryption (12-byte nonce) =====");
+
+        std::string plaintext = "Hello ChaCha20 World!";
+        ByteArray plain_data(plaintext.begin(), plaintext.end());
+        spdlog::info("Plaintext: {}", plaintext);
+
+        loki::crypto::Random random;
+        ByteArray key(ChaCha20::KEY_SIZE);
+        for (auto& b : key) b = static_cast<uint8_t>(random.uint32() & 0xFF);
+
+        // 12-byte nonce
+        ByteArray nonce(ChaCha20::NONCE_SIZE);
+        for (auto& b : nonce) b = static_cast<uint8_t>(random.uint32() & 0xFF);
+
+        spdlog::info("Key: {}", random.hex_string(key.size()));
+        spdlog::info("Nonce (12B): {}", random.hex_string(nonce.size()));
+
+        ByteArray encrypted = ChaCha20::encrypt(plain_data, key, nonce);
+        spdlog::info("Encrypted (12B nonce): {}", random.hex_string(encrypted.size()));
+
+        ByteArray decrypted = ChaCha20::decrypt(encrypted, key, nonce);
+        spdlog::info("Decrypted (12B nonce): {}\n", std::string(decrypted.begin(), decrypted.end()));
+    }
+
+    {
+        spdlog::info("===== ChaCha20 Encryption (16-byte IV) =====");
+
+        std::string plaintext = "Hello ChaCha20 with IV!";
+        ByteArray plain_data(plaintext.begin(), plaintext.end());
+        spdlog::info("Plaintext: {}", plaintext);
+
+        loki::crypto::Random random;
+        ByteArray key(ChaCha20::KEY_SIZE);
+        for (auto& b : key) b = static_cast<uint8_t>(random.uint32() & 0xFF);
+
+        // 16-byte IV
+        ByteArray iv(ChaCha20::IV_SIZE);
+        for (auto& b : iv) b = static_cast<uint8_t>(random.uint32() & 0xFF);
+
+        spdlog::info("Key: {}", random.hex_string(key.size()));
+        spdlog::info("IV (16B): {}", random.hex_string(iv.size()));
+
+        ByteArray encrypted = ChaCha20::encrypt(plain_data, key, iv);
+        spdlog::info("Encrypted (16B IV): {}", random.hex_string(encrypted.size()));
+
+        ByteArray decrypted = ChaCha20::decrypt(encrypted, key, iv);
+        spdlog::info("Decrypted (16B IV): {}\n", std::string(decrypted.begin(), decrypted.end()));
     }
 
     // AES (ECB)

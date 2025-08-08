@@ -7,15 +7,16 @@ namespace loki::crypto {
     class ChaCha20 : public Cipher {
     public:
         static constexpr size_t KEY_SIZE = 32;      // 256 bits
-        static constexpr size_t NONCE_SIZE = 12;    // 96 bits
+        static constexpr size_t IV_SIZE = 16;       // 128 bits (12-byte nonce + 4-byte counter)
+        static constexpr size_t NONCE_SIZE = 12;    // 96 bits (part of IV)
 
         ChaCha20();
         ~ChaCha20() override = default;
 
         void generate_key();
 
-        static ByteArray encrypt(const ByteArray& plaintext, const ByteArray& key, const ByteArray& nonce);
-        static ByteArray decrypt(const ByteArray& ciphertext, const ByteArray& key, const ByteArray& nonce);
+        static ByteArray encrypt(const ByteArray& plaintext, const ByteArray& key, const ByteArray& iv_or_nonce);
+        static ByteArray decrypt(const ByteArray& ciphertext, const ByteArray& key, const ByteArray& iv_or_nonce);
 
     private:
         const EVP_CIPHER* get_cipher() const override;
