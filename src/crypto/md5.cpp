@@ -2,7 +2,9 @@
 #include <openssl/md5.h>
 
 namespace loki::crypto {
-    MD5::MD5() : Hash(EVP_md5()) {}
+    MD5::MD5(std::string string)
+        : Hash(EVP_md5()) {
+    }
 
     ByteArray MD5::hash(const uint8_t* data, size_t len) {
         return Hash::quick_hash(EVP_md5(), data, len);

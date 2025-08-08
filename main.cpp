@@ -27,7 +27,10 @@ int main() {
     {
         spdlog::info("===== SHA-256 Hashing =====");
         const std::string message = "Hello OpenSSL World";
-        ByteArray digest = SHA256::hash(message);
+
+        loki::crypto::SHA256 sha256;
+        ByteArray digest = sha256.hash(message);
+
         std::string hex_digest;
         for (auto byte : digest) {
             char buf[3];
@@ -37,10 +40,11 @@ int main() {
         spdlog::info("SHA-256('{}') = {}\n", message, hex_digest);
     }
 
-    // AES
+    // AES (ECB)
     {
         spdlog::info("===== AES Encryption (ECB, 128-bit key) =====");
-        AES aes(AES::KeySize::AES_128, AES::Mode::ECB);
+        loki::crypto::AES aes(AES::KeySize::AES_128, AES::Mode::ECB);
+
         std::vector<uint8_t> key(16, 0x01);  // 128bit key
         aes.set_key(key);
 
@@ -62,10 +66,11 @@ int main() {
         spdlog::info("Decrypted data: {}\n", decrypted_str);
     }
 
-    // AES
+    // AES (CBC)
     {
         spdlog::info("===== AES Encryption (CBC, 128-bit key) =====");
-        AES aes(AES::KeySize::AES_128, AES::Mode::CBC);
+        loki::crypto::AES aes(AES::KeySize::AES_128, AES::Mode::CBC);
+
         std::vector<uint8_t> key(16, 0x02);  // 128bit key
         aes.set_key(key);
 
@@ -90,19 +95,12 @@ int main() {
     // Random
     {
         spdlog::info("===== Random Generation =====");
-        Random random;
+        loki::crypto::Random random;
 
-        uint32_t rand32 = random.uint32();
-        spdlog::info("Random uint32: {}", rand32);
-
-        uint64_t rand64 = random.uint64();
-        spdlog::info("Random uint64: {}", rand64);
-
-        std::string base64_str = random.base64_string(64);
-        spdlog::info("Random base64 string (64 bytes): {}", base64_str);
-
-        std::string hex_str = random.hex_string(64);
-        spdlog::info("Random hex string (64 bytes): {}\n", hex_str);
+        spdlog::info("Random uint32: {}", random.uint32());
+        spdlog::info("Random uint64: {}", random.uint64());
+        spdlog::info("Random base64 string (64 bytes): {}", random.base64_string(64));
+        spdlog::info("Random hex string (64 bytes): {}\n", random.hex_string(64));
     }
 
     // MD5
@@ -110,7 +108,9 @@ int main() {
         spdlog::info("===== MD5 =====");
         std::string input = "Hello OpenSSL World";
 
-        ByteArray digest1 = MD5::hash(input);
+        loki::crypto::MD5 md5(input);
+
+        ByteArray digest1 = md5.hash(input);
         std::string hex_digest1;
         for (auto byte : digest1) {
             char buf[3];
@@ -120,7 +120,7 @@ int main() {
         spdlog::info("MD5(std::string): \"{}\" -> {}", input, hex_digest1);
 
         ByteArray data2(input.begin(), input.end());
-        ByteArray digest2 = MD5::hash(data2);
+        ByteArray digest2 = md5.hash(data2);
         std::string hex_digest2;
         for (auto byte : digest2) {
             char buf[3];
@@ -129,7 +129,7 @@ int main() {
         }
         spdlog::info("MD5(ByteArray): \"{}\" -> {}", input, hex_digest2);
 
-        ByteArray digest3 = MD5::hash(reinterpret_cast<const uint8_t*>(input.data()), input.size());
+        ByteArray digest3 = md5.hash(reinterpret_cast<const uint8_t*>(input.data()), input.size());
         std::string hex_digest3;
         for (auto byte : digest3) {
             char buf[3];

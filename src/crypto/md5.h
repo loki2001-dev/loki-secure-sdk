@@ -7,7 +7,7 @@ namespace loki::crypto {
     public:
         static constexpr size_t DIGEST_SIZE = 16;
 
-        MD5();
+        explicit MD5(std::string string);
         ~MD5() override = default;
 
         static ByteArray hash(const uint8_t* data, size_t len);
