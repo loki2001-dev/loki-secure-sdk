@@ -2,6 +2,7 @@
 #include "crypto/aes.h"
 #include "crypto/chacha20.h"
 #include "crypto/md5.h"
+#include "crypto/signature.h"
 #include "crypto/sha256.h"
 #include "crypto/sha512.h"
 #include "crypto/random.h"
@@ -225,6 +226,30 @@ int main() {
             hex_digest3 += buf;
         }
         spdlog::info("MD5(uint8_t*, size): \"{}\" -> {}\n", input, hex_digest3);
+    }
+
+    // Signature
+    {
+        spdlog::info("===== Signature =====");
+        std::string input = "Hello OpenSSL World";
+        ByteArray message(input.begin(), input.end());
+
+        loki::crypto::Signature signature(loki::crypto::Signature::Algorithm::RSA_PKCS1, loki::crypto::Signature::Hash::SHA256);
+
+        const auto public_key = signature.load_pem_file("../pem/public_key.pem");
+        signature.set_public_key(public_key);
+
+        const auto private_key = signature.load_pem_file("../pem/private_key.pem");
+        signature.set_private_key(private_key);
+
+        const auto signature_message = signature.sign(message);
+        const auto signature_message_str = signature.to_hex_string(signature_message);
+
+        spdlog::info("Signature message: {}", signature_message_str);
+        spdlog::info("Signature size: {}", signature_message_str.size());
+
+        bool ok = signature.verify(message, signature_message);
+        spdlog::info("Verification result: {}\n", ok ? "Success" : "Failure");
     }
 
     cleanup();

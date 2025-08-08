@@ -2,6 +2,7 @@
 
 #include "../fwd.h"
 #include <openssl/ossl_typ.h>
+#include <string>
 
 namespace loki::crypto {
 
@@ -31,6 +32,10 @@ namespace loki::crypto {
 
         static ByteArray sign(Algorithm algo, Hash hash, const std::string& private_key_pem, const ByteArray& message);
         static bool verify(Algorithm algo, Hash hash, const std::string& public_key_pem, const ByteArray& message, const ByteArray& signature);
+
+        static std::string load_pem_file(const std::string& filepath);
+
+        std::string to_hex_string(const ByteArray& data);
 
     private:
         Algorithm _algorithm;

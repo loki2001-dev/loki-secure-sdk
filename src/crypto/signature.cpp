@@ -7,6 +7,9 @@
 #include <openssl/ossl_typ.h>
 
 #include <memory>
+#include <sstream>
+#include <fstream>
+#include <iomanip>
 
 namespace loki::crypto {
 
@@ -37,6 +40,16 @@ namespace loki::crypto {
         : _algorithm(algorithm),
         _hash(hash) {
 
+    }
+
+    std::string Signature::load_pem_file(const std::string& filepath) {
+        std::ifstream file(filepath, std::ios::in);
+        if (!file.is_open()) {
+            return {};
+        }
+        std::stringstream ss;
+        ss << file.rdbuf();
+        return ss.str();
     }
 
     void Signature::set_private_key(const std::string& pem) {
@@ -152,6 +165,15 @@ namespace loki::crypto {
             case Hash::SHA512: return EVP_sha512();
         }
         return nullptr;
+    }
+
+    std::string Signature::to_hex_string(const ByteArray& data) {
+        std::ostringstream oss;
+        oss << std::hex << std::setfill('0');
+        for (auto b : data) {
+            oss << std::setw(2) << static_cast<int>(b);
+        }
+        return oss.str();
     }
 
 } // namespace loki::crypto
