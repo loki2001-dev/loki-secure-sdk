@@ -1,4 +1,7 @@
 #include "openssl_wrapper.h"
+#include "asym/dsa.h"
+#include "asym/ec.h"
+#include "asym/rsa.h"
 #include "crypto/aes.h"
 #include "crypto/chacha20.h"
 #include "crypto/md5.h"
@@ -250,6 +253,77 @@ int main() {
 
         bool ok = signature.verify(message, signature_message);
         spdlog::info("Verification result: {}\n", ok ? "Success" : "Failure");
+    }
+
+    // DSA
+    {
+        spdlog::info("===== DSA =====");
+        std::string input = "Hello OpenSSL World";
+
+        loki::crypto::DSA dsa;
+        dsa.generate_key(2048);
+        spdlog::info("DSA key pair generated (2048 bits)");
+
+        ByteArray data(input.begin(), input.end());
+
+        auto signature = dsa.sign(data);
+        spdlog::info("DSA signature generated ({} bytes)", signature.size());
+
+        auto priv_key = dsa.export_private_key();
+        auto pub_key = dsa.export_public_key();
+        spdlog::info("DSA Private Key:\n{}", priv_key);
+        spdlog::info("DSA Public Key:\n{}", pub_key);
+
+        bool ok = dsa.verify(data, signature);
+        spdlog::info("DSA signature verification result: {}\n", ok ? "Success" : "Failure");
+    }
+
+    // EC
+    {
+        spdlog::info("===== EC =====");
+        std::string input = "Hello OpenSSL World";
+
+        loki::crypto::EC ec;
+        ec.generate_key(EC::Curve::SECP256R1);
+        spdlog::info("EC key pair generated (Curve: SECP256R1)");
+
+        ByteArray data(input.begin(), input.end());
+
+        auto sig = ec.sign(data);
+        spdlog::info("EC signature generated ({} bytes)", sig.size());
+
+        auto priv_key = ec.export_private_key();
+        auto pub_key = ec.export_public_key();
+        spdlog::info("EC Private Key:\n{}", priv_key);
+        spdlog::info("EC Public Key:\n{}", pub_key);
+
+        bool valid = ec.verify(data, sig);
+        spdlog::info("EC signature verification result: {}\n", valid ? "Success" : "Failure");
+    }
+
+    // RSA
+    {
+        spdlog::info("===== RSA =====");
+        std::string input = "Hello OpenSSL World";
+
+        loki::crypto::RSA rsa;
+        rsa.generate_key(2048);
+        spdlog::info("RSA key pair generated (2048 bits)");
+
+        ByteArray data(input.begin(), input.end());
+
+        auto ciphertext = rsa.encrypt(data);
+        spdlog::info("RSA encryption done (ciphertext size: {})", ciphertext.size());
+
+        auto decrypted = rsa.decrypt(ciphertext);
+        spdlog::info("RSA decryption done (plaintext size: {})", decrypted.size());
+        spdlog::info("Decrypted text: {}", std::string(decrypted.begin(), decrypted.end()));
+
+        auto signature = rsa.sign(data);
+        spdlog::info("RSA signature generated ({} bytes)", signature.size());
+
+        bool ok = rsa.verify(data, signature);
+        spdlog::info("RSA signature verification result: {}\n", ok ? "Success" : "Failure");
     }
 
     cleanup();
