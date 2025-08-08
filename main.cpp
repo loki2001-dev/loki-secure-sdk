@@ -10,6 +10,7 @@
 #include "crypto/sha512.h"
 #include "crypto/random.h"
 #include "x509/csr.h"
+#include "x509/crl.h"
 #include <spdlog/spdlog.h>
 #include <fstream>
 
@@ -342,6 +343,31 @@ int main() {
 
         std::string subject_dn = csr.get_subject_dn();
         spdlog::info("CSR Subject DN: {}\n", subject_dn);
+    }
+
+    // X509/CRL
+    {
+        spdlog::info("===== X509/CRL with PEM and DER ===== ");
+        std::ifstream crlfile_pem("../pem/crl.pem", std::ios::binary);
+        std::string crl_pem((std::istreambuf_iterator<char>(crlfile_pem)), std::istreambuf_iterator<char>());
+
+        loki::x509::CRL crl;
+        loki::x509::CRL crl_from_der;
+
+        crl.load_pem(crl_pem);
+        spdlog::info("Loaded CRL from PEM");
+
+        loki::ByteArray crl_der = crl.export_der();
+        spdlog::info("Exported CRL to DER ({} bytes)", crl_der.size());
+
+        crl_from_der.load_der(crl_der);
+        spdlog::info("Loaded CRL again from DER");
+
+        std::string crl_pem2 = crl_from_der.export_pem();
+        spdlog::info("Exported CRL back to PEM:\n{}", crl_pem2);
+
+        bool valid = crl_from_der.is_valid();
+        spdlog::info("CRL valid: {}\n", valid ? "Yes" : "No");
     }
 
     cleanup();
