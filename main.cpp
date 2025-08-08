@@ -9,7 +9,9 @@
 #include "crypto/sha256.h"
 #include "crypto/sha512.h"
 #include "crypto/random.h"
+#include "x509/csr.h"
 #include <spdlog/spdlog.h>
+#include <fstream>
 
 using namespace loki;
 using namespace loki::openssl_wrapper;
@@ -324,6 +326,22 @@ int main() {
 
         bool ok = rsa.verify(data, signature);
         spdlog::info("RSA signature verification result: {}\n", ok ? "Success" : "Failure");
+    }
+
+    // X509/CSR
+    {
+        spdlog::info("===== X509/CSR ===== ");
+        std::ifstream keyfile("../pem/private_key.pem");
+        std::string private_key_pem((std::istreambuf_iterator<char>(keyfile)), std::istreambuf_iterator<char>());
+
+        loki::x509::CSR csr;
+        csr.generate(ByteArray(private_key_pem.begin(), private_key_pem.end()), "CN=example.com,O=ExampleOrg,C=US");
+
+        std::string csr_pem = csr.export_pem();
+        spdlog::info("Generated CSR PEM:\n{}", csr_pem);
+
+        std::string subject_dn = csr.get_subject_dn();
+        spdlog::info("CSR Subject DN: {}\n", subject_dn);
     }
 
     cleanup();
