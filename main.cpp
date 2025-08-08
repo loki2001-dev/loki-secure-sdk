@@ -1,5 +1,6 @@
 #include "openssl_wrapper.h"
 #include "crypto/sha256.h"
+#include "crypto/sha512.h"
 #include "crypto/aes.h"
 #include "crypto/md5.h"
 #include "crypto/random.h"
@@ -38,6 +39,41 @@ int main() {
             hex_digest += buf;
         }
         spdlog::info("SHA-256('{}') = {}\n", message, hex_digest);
+    }
+
+    // SHA-512
+    {
+        spdlog::info("===== SHA-512 Hashing =====");
+        const std::string message = "Hello OpenSSL World";
+
+        loki::crypto::SHA512 sha512;
+        ByteArray digest1 = sha512.hash(message);
+        std::string hex_digest1;
+        for (auto byte : digest1) {
+            char buf[3];
+            snprintf(buf, sizeof(buf), "%02x", byte);
+            hex_digest1 += buf;
+        }
+        spdlog::info("SHA-512(std::string): '{}' = {}", message, hex_digest1);
+
+        ByteArray data(message.begin(), message.end());
+        ByteArray digest2 = sha512.hash(data);
+        std::string hex_digest2;
+        for (auto byte : digest2) {
+            char buf[3];
+            snprintf(buf, sizeof(buf), "%02x", byte);
+            hex_digest2 += buf;
+        }
+        spdlog::info("SHA-512(ByteArray): '{}' = {}", message, hex_digest2);
+
+        ByteArray digest3 = sha512.hash(reinterpret_cast<const uint8_t*>(message.data()), message.size());
+        std::string hex_digest3;
+        for (auto byte : digest3) {
+            char buf[3];
+            snprintf(buf, sizeof(buf), "%02x", byte);
+            hex_digest3 += buf;
+        }
+        spdlog::info("SHA-512(uint8_t*, size): '{}' = {}\n", message, hex_digest3);
     }
 
     // AES (ECB)
