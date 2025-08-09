@@ -47,6 +47,12 @@
 ## Build Instructions
 
 ```bash
+# Update package lists
+sudo apt update
+
+# Install dependencies
+sudo apt install libssl-dev
+
 # Clone the repository
 git clone https://github.com/loki2001-dev/loki-secure-sdk.git
 cd loki-secure-sdk
